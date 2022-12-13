@@ -2,19 +2,25 @@
 
 pragma solidity >=0.7.0 <0.9.0;
 
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract Boss is ERC721Enumerable, Ownable {
+contract Boss is ERC721, Ownable {
   using Strings for uint256;
+  using Counters for Counters.Counter;
+
+  Counters.Counter private supply;
 
   string public baseURI;
   string public baseExtension = ".json";
   string public notRevealedUri;
-  uint256 public cost = 10 ether;
+
+  uint256 public cost = 1 ether;
   uint256 public maxSupply = 5555;
   uint256 public maxMintAmount = 2;
   uint256 public nftPerAddressLimit = 2;
+
   bool public paused = false;
   bool public revealed = false;
   bool public onlyWhitelisted = true;
@@ -22,14 +28,18 @@ contract Boss is ERC721Enumerable, Ownable {
   mapping(address => uint256) public addressMintedBalance;
 
 
-  constructor(
-    string memory _name,
-    string memory _symbol,
+  constructor (
     string memory _initBaseURI,
     string memory _initNotRevealedUri
-  ) ERC721(_name, _symbol) {
+  ) ERC721("_name", "_symbol") {
     setBaseURI(_initBaseURI);
     setNotRevealedURI(_initNotRevealedUri);
+  }
+
+  modifier mintCompliance(uint256 _mintAmount){
+    require(_mintAmount > 0 && _mintAmount <=  maxMintAmount, "invalid mint amount");
+    require(supply.current() + _mintAmount <= maxSupply, "maxSupply exceeded" );
+    _;
   }
 
   // internal
@@ -38,27 +48,25 @@ contract Boss is ERC721Enumerable, Ownable {
   }
 
   // public
-  function mint(uint256 _mintAmount) public payable {
+  function mint(uint256 _mintAmount) public payable mintCompliance(_mintAmount){
     require(!paused, "the contract is paused");
-    uint256 supply = totalSupply();
     require(_mintAmount > 0, "need to mint at least 1 NFT");
-    require(_mintAmount <= maxMintAmount, "max mint amount per session exceeded");
-    require(supply + _mintAmount <= maxSupply, "max NFT limit exceeded");
+    require(msg.value >= cost * _mintAmount, "insufficient funds");
 
     if (msg.sender != owner()) {
         if(onlyWhitelisted == true) {
             require(isWhitelisted(msg.sender), "user is not whitelisted");
             uint256 ownerMintedCount = addressMintedBalance[msg.sender];
             require(ownerMintedCount + _mintAmount <= nftPerAddressLimit, "max NFT per address exceeded");
-        }
-        require(msg.value >= cost * _mintAmount, "insufficient funds");
-    }
-    
-    for (uint256 i = 1; i <= _mintAmount; i++) {
-        addressMintedBalance[msg.sender]++;
-      _safeMint(msg.sender, supply + i);
-    }
+        }        
+    }    
+    _mintLoop(msg.sender, _mintAmount);
   }
+
+  function totalSupply() public view returns(uint256){
+    return supply.current()
+  };
+
   
   function isWhitelisted(address _user) public view returns (bool) {
     for (uint i = 0; i < whitelistedAddresses.length; i++) {
@@ -151,5 +159,12 @@ contract Boss is ERC721Enumerable, Ownable {
     (bool os, ) = payable(owner()).call{value: address(this).balance}("");
     require(os);
     // =============================================================================
+  }
+
+  function _mintLoop(address _receiver, uint256 _mintAmount) internal{
+    for (var i = 0; i < _mintAmount; i++) {
+      supply.increment();
+      _safeMint(_receiver, supply.current());
+    }
   }
 }
