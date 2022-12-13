@@ -4,8 +4,8 @@ const main = async ()=>{
     const [owner, superCoder] = await hre.ethers.getSigners();
     const domainContractFactory = await hre.ethers.getContractFactory("Boss");
     const domainContract = await domainContractFactory.deploy("Boss Baby","BB",
-    "ipfs://QmUbLWBnWcg1RzfYYDaG7yptHWMdq9tmnhVBpG8z47VKoo/", 
-    "ipfs://QmcLkK5x1QW3v3etFZrxq9Wg8UGc3exQYj2Y73cwXoskFs/");
+    "", 
+    "");
     await domainContract.deployed()
     console.log("contract depolyed to : ", domainContract.address)
 
