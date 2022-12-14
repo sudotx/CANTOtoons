@@ -65,9 +65,9 @@ export default function ExploreDiv({ tokenId }) {
           {/* <a href="https://twitter.com/intent/tweet?text=View%20Drawing%2337%20@drawyournft_xyz&url=https://drawyournft.xyz/view/37" */}
           {/* <a href="https://twitter.com/share?ref_src=twsrc%5Etfw"
                                 class="twitter-share-button" data-size="large"
-                                data-text="Hey! checkout my Shardian Boss PFP #NFT  🔥 
-                                collection #22 on shardeum liberty🗽 @nftshm #shardeum #ShardeumNFT ❤"
-                                data-url={`https://boss.shardeum.us/explore/${tokenId}`}
+                                data-text="Hey! checkout my Canto toons PFP #NFT  🔥 
+                                 #Canto ❤"
+                                data-url={`https://boss.us/explore/${tokenId}`}
                                 data-show-count="false">
                                     Tweet
                             </a> */}
@@ -78,7 +78,7 @@ export default function ExploreDiv({ tokenId }) {
               <Share
                 url={`https://boss.shardeum.us/explore/${tokenId}`}
                 options={{
-                  text: `Hey! checkout my Shardian Boss PFP #NFT  🔥 collection ${tokenId} on shardeum liberty🗽 @nftshm @NischalShetty #shardeum #ShardeumNFT ❤`,
+                  text: `Hey! checkout myCanto toons PFP #NFT  🔥 collection ${tokenId} on canto  @nftshm @NischalShetty #shardeum #ShardeumNFT ❤`,
                   size: "large",
                 }}
               />
