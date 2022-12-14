@@ -157,7 +157,7 @@ contract Boss is ERC721, Ownable {
   function withdraw() public payable onlyOwner {
     // =============================================================================
     (bool os, ) = payable(owner()).call{value: address(this).balance}("");
-    require(os);
+    require(os, "withdrawal error");
     // =============================================================================
   }
 
