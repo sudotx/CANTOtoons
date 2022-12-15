@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { ethers } from "ethers";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import BossGif from "../images/preview_3.gif";
 // import BossGif from "../images/6.png"
@@ -34,12 +34,16 @@ export default function MainDiv() {
   useEffect(() => {
     if (userData.userAddress) {
       fetchMints();
-      // let WhitelistedArray = WhitelistedAddress.map(item=>item.toLowerCase());
-      // let isWhiteListed = WhitelistedArray.includes(userData.userAddress.toLowerCase())
-      // user_Data_Context.setUserData(prevState => ({
-      //     ...prevState,
-      //     isWhiteListed: isWhiteListed
-      // }))
+      let WhitelistedArray = WhitelistedAddress.map((item) =>
+        item.toLowerCase()
+      );
+      let isWhiteListed = WhitelistedArray.includes(
+        userData.userAddress.toLowerCase()
+      );
+      user_Data_Context.setUserData((prevState) => ({
+        ...prevState,
+        isWhiteListed: isWhiteListed,
+      }));
     }
   }, [userData.userAddress]);
 
@@ -50,13 +54,11 @@ export default function MainDiv() {
     }));
   }, [userMintedNFTs]);
 
-  // useEffect(()=>{
-
-  // },[userData.isWhiteListed])
+  useEffect(() => {}, [userData.isWhiteListed]);
 
   const mintNFT = async () => {
     console.log("mint");
-    // setLoading(true);
+    setLoading(true);
     try {
       const { ethereum } = window;
       if (ethereum) {
@@ -68,11 +70,11 @@ export default function MainDiv() {
           signer
         );
         let price = cost * inputValue;
-        if (
-          userData.userAddress === "0x422938990fed07aeb904260b1094943afc2e366d"
-        ) {
-          price = 0;
-        }
+        // if (
+        //   userData.userAddress === "0x422938990fed07aeb904260b1094943afc2e366d"
+        // ) {
+        //   price = 0;
+        // }
         let tx = await contract.mint(inputValue, {
           value: ethers.utils.parseEther(price.toString()),
         });
@@ -150,7 +152,7 @@ export default function MainDiv() {
   return (
     <div className="mainDiv" id="mint">
       <div className="left">
-        <div className="title">Boss Baby NFT</div>
+        <div className="title">CAnto TOOns NFT</div>
         <div className="sub_title">Mint yours before we sell out 🚀</div>
         <div className="mints">{totalSupply}/5555</div>
         <div className="number">

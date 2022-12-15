@@ -4,10 +4,10 @@ const UserDataContext = createContext();
 
 const UserDataProvider = (props) => {
   const [userData, setUserData] = useState({
-      userAddress:null,
-      isShardeum:false,
-      userMintedNFTs:[],
-      isWhiteListed:false
+    userAddress: null,
+    isShardeum: false,
+    userMintedNFTs: [],
+    isWhiteListed: false,
   });
   // the state that we'll be storing the user info
 
