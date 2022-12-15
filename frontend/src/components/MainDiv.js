@@ -14,7 +14,7 @@ export default function MainDiv() {
   const [userMintedNFTs, setUserMintedNFTs] = useState([]);
   const [totalSupply, setTotalSupply] = useState(0);
 
-  const CONTRACT_ADDRESS = "<contract address>";
+  const CONTRACT_ADDRESS = "0x97DAE4f6a360A745d21eDCa3175e1a465Dc78778";
 
   const user_Data_Context = useContext(UserDataContext);
   let userData = user_Data_Context.userData;
