@@ -12,39 +12,30 @@ contract Boss is ERC721, Ownable {
 
   Counters.Counter private supply;
 
-  string public baseURI;
-  string public baseExtension = ".json";
-  string public notRevealedUri;
+  string public uriPrefix = "";
+  string public uriSuffix = ".json";
+  string public hiddenMetadataUri;
 
-  uint256 public cost = 1 ether;
+  uint256 public cost = 0.2 ether;
   uint256 public maxSupply = 5555;
   uint256 public maxMintAmount = 2;
   uint256 public nftPerAddressLimit = 2;
 
   bool public paused = false;
   bool public revealed = false;
-  bool public onlyWhitelisted = true;
+  bool public onlyWhitelisted = false;
   address[] public whitelistedAddresses;
   mapping(address => uint256) public addressMintedBalance;
 
 
-  constructor (
-    string memory _initBaseURI,
-    string memory _initNotRevealedUri
-  ) ERC721("_name", "_symbol") {
-    setBaseURI(_initBaseURI);
-    setNotRevealedURI(_initNotRevealedUri);
+  constructor() ERC721("CANTOTOONS", "CNT") {
+    setHiddenMetadataUri("ipfs://__CID__/hidden.json");
   }
 
   modifier mintCompliance(uint256 _mintAmount){
     require(_mintAmount > 0 && _mintAmount <=  maxMintAmount, "invalid mint amount");
     require(supply.current() + _mintAmount <= maxSupply, "maxSupply exceeded" );
     _;
-  }
-
-  // internal
-  function _baseURI() internal view virtual override returns (string memory) {
-    return baseURI;
   }
 
   // public
@@ -64,8 +55,8 @@ contract Boss is ERC721, Ownable {
   }
 
   function totalSupply() public view returns(uint256){
-    return supply.current()
-  };
+    return supply.current();
+  }
 
   
   function isWhitelisted(address _user) public view returns (bool) {
@@ -83,14 +74,21 @@ contract Boss is ERC721, Ownable {
     returns (uint256[] memory)
   {
     uint256 ownerTokenCount = balanceOf(_owner);
-    uint256[] memory tokenIds = new uint256[](ownerTokenCount);
-    for (uint256 i; i < ownerTokenCount; i++) {
-      tokenIds[i] = tokenOfOwnerByIndex(_owner, i);
+    uint256[] memory ownedTokenIds = new uint256[](ownerTokenCount);
+    uint256 currentTokenId = 1;
+    uint256 ownedTokenIndex = 0;
+
+    while(ownedTokenIndex < ownerTokenCount && currentTokenId <= maxSupply){
+      address currentTokenOwner = ownerOf(currentTokenId);
+      if(currentTokenOwner == _owner){
+        ownedTokenIds[ownedTokenIndex] = currentTokenId;
+        ownedTokenIndex++;
+      }currentTokenId++;
     }
-    return tokenIds;
+    return ownedTokenIds;
   }
 
-  function tokenURI(uint256 tokenId)
+  function tokenURI(uint256 _tokenId)
     public
     view
     virtual
@@ -98,50 +96,49 @@ contract Boss is ERC721, Ownable {
     returns (string memory)
   {
     require(
-      _exists(tokenId),
+      _exists(_tokenId),
       "ERC721Metadata: URI query for nonexistent token"
     );
-    
-    if(revealed == false) {
-        return notRevealedUri;
+
+    if (revealed == false) {
+      return hiddenMetadataUri;
     }
 
     string memory currentBaseURI = _baseURI();
-    return bytes(currentBaseURI).length > 0
-        ? string(abi.encodePacked(currentBaseURI, tokenId.toString(), baseExtension))
+    return
+      bytes(currentBaseURI).length > 0
+        ? string(
+          abi.encodePacked(currentBaseURI, _tokenId.toString(), uriSuffix)
+        )
         : "";
   }
 
   //only owner
-  function reveal() public onlyOwner {
-      revealed = true;
-  }
-  
-  function setNftPerAddressLimit(uint256 _limit) public onlyOwner {
-    nftPerAddressLimit = _limit;
-  }
-  
-  function setCost(uint256 _newCost) public onlyOwner {
-    cost = _newCost;
+   function setRevealed(bool _state) public onlyOwner {
+    revealed = _state;
   }
 
-  function setmaxMintAmount(uint256 _newmaxMintAmount) public onlyOwner {
-    maxMintAmount = _newmaxMintAmount;
+  function setCost(uint256 _cost) public onlyOwner {
+    cost = _cost;
   }
 
-  function setBaseURI(string memory _newBaseURI) public onlyOwner {
-    baseURI = _newBaseURI;
+
+  function setHiddenMetadataUri(string memory _hiddenMetadataUri)
+    public
+    onlyOwner
+  {
+    hiddenMetadataUri = _hiddenMetadataUri;
   }
 
-  function setBaseExtension(string memory _newBaseExtension) public onlyOwner {
-    baseExtension = _newBaseExtension;
-  }
-  
-  function setNotRevealedURI(string memory _notRevealedURI) public onlyOwner {
-    notRevealedUri = _notRevealedURI;
+  function setUriPrefix(string memory _uriPrefix) public onlyOwner {
+    uriPrefix = _uriPrefix;
   }
 
-  function pause(bool _state) public onlyOwner {
+  function setUriSuffix(string memory _uriSuffix) public onlyOwner {
+    uriSuffix = _uriSuffix;
+  }
+
+  function setPaused(bool _state) public onlyOwner {
     paused = _state;
   }
   
@@ -153,6 +150,10 @@ contract Boss is ERC721, Ownable {
     delete whitelistedAddresses;
     whitelistedAddresses = _users;
   }
+
+  function _baseURI() internal view virtual override returns (string memory) {
+    return uriPrefix;
+  }
  
   function withdraw() public payable onlyOwner {
     // =============================================================================
@@ -162,7 +163,7 @@ contract Boss is ERC721, Ownable {
   }
 
   function _mintLoop(address _receiver, uint256 _mintAmount) internal{
-    for (var i = 0; i < _mintAmount; i++) {
+    for (uint256 i = 0; i < _mintAmount; i++) {
       supply.increment();
       _safeMint(_receiver, supply.current());
     }
