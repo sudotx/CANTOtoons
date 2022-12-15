@@ -81,7 +81,7 @@ export default function MainDiv() {
         await tx.wait();
         console.log("tx-hash", tx.hash);
         console.log(
-          "NFT Minted at tx https://explorer.liberty10.shardeum.org/transaction/" +
+          "NFT Minted at tx https://goerli.etherscan.io/tx/" +
             tx.hash
         );
         toast.success("Your Canto toons Baby NFT Minted!", {
